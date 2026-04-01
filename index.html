@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday ❤️</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pathway+Gothic+One&family=Staatliches&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<canvas id="starfield"></canvas>
+
+<!-- Intro music (One Piece theme) - will attempt autoplay on load -->
+<audio id="introMusic">
+  <source src="assets/One-Piece-Theme-Song.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Autoplay fallback overlay shown when browser blocks autoplay -->
+<div id="autoplayOverlay" class="autoplay-overlay hidden" role="button" aria-label="Play intro music">Tap or click to play intro music ▶</div>
+
+<!-- Background/credits music (Star Wars theme) -->
+<audio id="bgMusic" loop>
+  <source src="assets/01-Episode I - Star Wars Main Title and the Arrival at Naboo.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Character GIFs (fixed positions) -->
+<img src="assets/tony-chopper-one-piece.gif" alt="Tony Chopper" id="chopper" class="char-gif chopper">
+<img src="assets/luffy.gif" alt="Luffy" id="luffyFixed" class="char-gif luffy-fixed">
+<img src="assets/trafalgar-law-one-piece.gif" alt="Trafalgar Law" id="lawFixed" class="char-gif law-fixed">
+<!-- "ME when i see you" video button and overlay -->
+<button id="meButton" class="me-button">ME when i see you</button>
+<div id="meVideoOverlay" class="me-video-overlay hidden" aria-hidden="true">
+  <video id="meVideo" class="me-video" playsinline>
+    <source src="assets/Sanji is delulu 😂😂 - ɪᴄʏ ᴘɪxɪᴇ (480p, h264).mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- Fullscreen MP4 that plays when ADVANCE fills the screen -->
+<div id="fullVideoOverlay" class="me-video-overlay hidden" aria-hidden="true">
+  <video id="fullVideo" class="me-video" playsinline>
+    <source src="assets/Untitled video - Made with Clipchamp (2).mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- Gift-specific fullscreen video overlay -->
+<div id="giftVideoOverlay" class="me-video-overlay hidden" aria-hidden="true">
+  <video id="giftVideo" class="me-video" playsinline>
+    <source src="assets/Untitled video - SEVIKA.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- Letter message shown after gift video finishes (now a looping video) -->
+<div id="giftLetter" class="gift-letter hidden" aria-hidden="true">
+  <video id="giftLetterVideo" class="gift-letter-video" playsinline preload="auto">
+    <source src="assets/A letter for you.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+    <!-- Nice-->
+
+<!-- Advance overlay: white screen that fills gradually and popup word -->
+<div id="advanceOverlay" class="advance-overlay" aria-hidden="true"></div>
+
+<button id="backBtn">⬅ Back</button>
+<button id="musicToggle">🔊</button>
+
+<div id="app">
+  <!-- STAR BACKGROUND -->
+  <!-- BABY YODA TOP LEFT -->
+<img 
+  src="assets/baby-yoda.gif" 
+  alt="Baby Yoda" 
+  class="baby-yoda"
+/>
+
+
+  <!-- START -->
+  <section class="screen active" id="start">
+    <h1 class="title">
+      Happy Birthday<br>
+      <span class="name-glow">Aphiwe</span> 🎉
+    </h1>
+    <button class="start-btn" onclick="startCredits()">💖 Happy Birthday 💖</button>
+      <!-- LUFFY DANCING -->
+  <img 
+    src="assets/luffy-dance.gif" 
+    alt="Luffy Dancing"
+    class="luffy-dance"
+  />
+  </section>
+
+  <!-- CREDITS -->
+   
+  <section class="screen" id="credits">
+    <!-- layered CSS stars for credits -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+    <!-- Title card (shows briefly before the crawl starts) -->
+    <div id="titleCard" class="title-card" aria-hidden="true">
+      <div class="title-card-inner">
+        <h1 class="title-card-main">APHIWE'S BIRTHDAY</h1>
+        <p class="title-card-sub">Episode Twenty One❤️</p>
+      </div>
+    </div>
+
+    <div class="starwars">
+      <div class ="crawl-frame">\
+       <div class="crawl">
+
+      <p class="episode">Episode ❤️</p>
+
+      <h1>HER BIRTHDAY</h1>
+
+      <p>
+        It is a special day.  
+        Against all odds, a beautiful soul  
+        was born into this world.
+      </p>
+      
+      <p>
+        With every smile and every laugh,  
+        she brings light where there was none.
+      </p>
+      
+      <p>
+        You are loved, cherished, adored,  
+        and in every moment, your presence  
+        makes the universe brighter.
+      </p>
+      
+      <p>
+        Friends and family gather from near and far,  
+        celebrating the joy you bring,  
+        the warmth you share, and the love that surrounds you.
+      </p>
+      
+      <p>
+        This small creation was built  
+        with love, code, and a full heart,  
+        just for her.
+      </p>
+      
+      <p>
+        As stars shine above in the endless sky,  
+        remember that your light shines just as bright,  
+        guiding those around you with laughter, kindness, and hope.
+      </p>
+      
+      <p>
+        On this day, the galaxy itself pauses  
+        to honor your story, your journey,  
+        and the joy that is uniquely yours.
+      </p>
+      
+      <p class="highlight">
+        Happy Birthday,<br>
+        <span id="herName">Aphiwe</span> ❤️
+      </p>
+    </div>
+    </div>
+  </div>
+
+  <!-- Cake Button -->
+  <button id="cakeBtn">🎂</button>
+
+  <!-- Avatar -->
+  <div class="avatars">
+    <img src="assets/star-war (1).gif" class="avatar">
+  </div>
+</section>
+
+
+  <!-- CAKE -->
+  <section class="screen" id="cakeScreen">
+    <div class="cake-container">
+      <div id="flame"></div>
+      <div id="cake">🎂</div>
+    </div>
+
+    <p class="cake-message">Blow out the candle to make a wish 💖</p>
+
+    <button onclick="resetFlame()">Relight 🔥</button>
+    <button id="manualBlowBtn">💨 Blow Candle</button>
+
+    <button id="giftBtn">🎁</button>
+  </section>
+
+  <!-- GIFT -->
+  <section class="screen" id="giftScreen">
+    <h1 class="gift-title">🎁 A Little Surprise 🎁</h1>
+    <div class="gift-box">🎁</div>
+    <p class="gift-message">
+      This isn’t just a gift…<br><br>
+      It’s a reminder of how special you are to me 💖
+    </p>
+  </section>
+
+</div>
+
+<script src="script.js"></script>
+<!-- MediaPipe (Hands, FaceMesh, Camera utils) for gesture+face detection -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<!-- Hidden video element used for webcam capture (MediaPipe camera) -->
+<video id="gestureVideo" autoplay playsinline muted style="display:none;width:1px;height:1px;"></video>
+</body>
+</html>

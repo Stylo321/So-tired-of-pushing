@@ -1,0 +1,907 @@
+body {
+  margin: 0;
+  background: black;
+  font-family: monospace;
+  color: pink;
+  overflow: hidden;
+}
+
+/* Canvas starfield sits behind the content */
+#starfield {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5; /* place above overlays but below crawl text (we'll raise crawl z-index) */
+  display: block;
+  pointer-events: none;
+}
+
+/* Autoplay fallback overlay (covers screen until user gesture) */
+.autoplay-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-family: 'Staatliches', sans-serif;
+  font-size: clamp(1rem, 3.5vw, 2rem);
+  z-index: 50;
+  cursor: pointer;
+  text-align: center;
+  padding: 1.5rem;
+}
+.autoplay-overlay.hidden {
+  display: none;
+}
+
+/* Character GIFs */
+.char-gif {
+  position: fixed;
+  pointer-events: none;
+  z-index: 40;
+  max-width: 18vw;
+  height: auto;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Reusable fade hide class */
+.fade-hidden {
+  opacity: 0 !important;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none !important;
+}
+
+/* Chopper bottom-left */
+.chopper {
+  left: 12px;
+  bottom: 12px;
+  max-width: 140px;
+}
+
+/* Luffy bottom-right with subtle bob animation */
+.luffy-fixed {
+  right: 14px;
+  bottom: 18px;
+  max-width: 160px;
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+/* Law top-right with slight scale pulse */
+.law-fixed {
+  right: 16px;
+  top: 100px;
+  max-width: 140px;
+  opacity: 0.95;
+  animation: subtlePulse 3.6s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes subtlePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* "ME when i see you" button */
+.me-button {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 22px;
+  z-index: 60;
+  background: linear-gradient(90deg,#ff8a8a,#ff5f9e);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+
+/* full-screen video overlay */
+.me-video-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 100;
+}
+.me-video-overlay.hidden { display: none; }
+.me-video {
+  width: min(90vw, 1200px);
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+
+/* Untitled video should fill the entire viewport when shown */
+/* (removed: fullscreen Untitled video rules) */
+
+/* Fullscreen controlled video overlay (cover viewport, no darkening) */
+#fullVideoOverlay {
+  background: transparent;
+  z-index: 9999;
+}
+
+#fullVideo {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  object-fit: cover;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Gift video overlay (same style as fullVideo but separate id) */
+#giftVideoOverlay {
+  background: transparent;
+  z-index: 9999;
+}
+
+#giftVideo {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  object-fit: cover;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Letter shown after gift video */
+.gift-letter {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+}
+.gift-letter.hidden { display: none; }
+.gift-letter-inner {
+  background: rgba(255,255,255,0.96);
+  color: #111;
+  padding: 36px;
+  max-width: 740px;
+  width: calc(100% - 64px);
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.5;
+}
+.gift-letter-inner h2 { margin-top: 0; text-align: center; }
+.gift-letter-inner p { margin: 12px 0; font-size: 1.05rem; }
+
+/* Advance overlay & popup */
+.advance-overlay {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 140;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease;
+}
+.advance-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  font-family: 'Staatliches', 'Pathway Gothic One', sans-serif;
+  font-weight: 800;
+  color: #111;
+  z-index: 141;
+  text-align: center;
+  display: inline-block;
+  white-space: nowrap;
+  transition: transform 0.65s cubic-bezier(.2,.9,.2,1), opacity 0.45s ease;
+  opacity: 1;
+  pointer-events: none;
+}
+
+
+/* Screens */
+.screen {
+  display: none;
+  height: 100vh;
+  width: 100vw;
+  text-align: center;
+  position: relative;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Start Page */
+.title {
+  font-size: clamp(2rem, 8vw, 3rem);
+}
+
+.start-btn {
+  margin-top: 20px;
+  padding: 14px 28px;
+  font-size: 1.2rem;
+  background: pink;
+  border: none;
+  cursor: pointer;
+}
+
+/* Glow Name */
+.name-glow,
+#herName {
+  color: #ff69b4;
+  text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493;
+  animation: glowPulse 2s infinite alternate;
+}
+
+@keyframes glowPulse {
+  from { text-shadow: 0 0 10px #ff69b4; }
+  to { text-shadow: 0 0 30px #ff1493; }
+}
+
+/* Music Button */
+#musicToggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: pink;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Credits */
+.credits-track {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.credits-text {
+  position: absolute;
+  width: 100%;
+  animation: scrollUp 35s linear infinite;
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  padding: 0 20px;
+  color: rgba(255,255,255,0.85);
+}
+
+.credits-text:nth-child(2) {
+  top: 100%;
+}
+
+@keyframes scrollUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+/* Cake Button */
+#cakeBtn {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 64px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  animation: cakeBounce 1s infinite alternate;
+  z-index: 6;
+}
+
+#cakeBtn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Avatars */
+.avatars {
+  position: fixed;
+  bottom: 80px;
+}
+
+.avatar {
+  width: clamp(64px, 25vw, 96px);
+}
+
+/* Hearts */
+.heart {
+  position: fixed;
+  top: -10px;
+  color: pink;
+  animation: fall linear forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh);
+    opacity: 0;
+  }
+}
+
+/* Cake Screen */
+.cake-container {
+  position: relative;
+  width: 200px;
+  margin: 0 auto;
+  margin-top: 100px;
+}
+
+#cake {
+  font-size: 120px;
+  text-align: center;
+}
+
+#flame {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 40px;
+  background: radial-gradient(circle at 50% 50%, yellow, orange, red);
+  border-radius: 50%;
+  animation: flameFlicker 0.2s infinite alternate;
+}
+
+@keyframes flameFlicker {
+  0% { transform: translateX(-50%) scaleY(1); opacity: 1; }
+  50% { transform: translateX(-48%) scaleY(0.8); opacity: 0.8; }
+  100% { transform: translateX(-52%) scaleY(1.1); opacity: 1; }
+}
+/* Smoke particles */
+.smoke {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  opacity: 0.8;
+  animation: smokeRise 2.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes smokeRise {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-80px) scale(1.5);
+    opacity: 0;
+  }
+}
+.confetti {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  font-size: 18px;
+  animation: confettiBurst 2.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 999;
+}
+
+@keyframes confettiBurst {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform:
+      translate(
+        calc(-50% + var(--x)),
+        calc(-50% + var(--y))
+      )
+      rotate(720deg)
+      scale(0.8);
+    opacity: 0;
+  }
+}
+.gift-title {
+  font-size: clamp(1.8rem, 6vw, 2.4rem);
+  color: pink;
+  margin-bottom: 20px;
+}
+
+.gift-box {
+  font-size: 90px;
+  animation: giftBounce 1.2s infinite alternate;
+}
+
+@keyframes giftBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-12px); }
+}
+
+.gift-message {
+  margin-top: 30px;
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  color: white;
+  line-height: 1.6;
+}
+/* STAR WARS OPENING CRAWL */
+.starwars {
+  position: relative;
+  
+  width: 100%;
+  height: 100%;
+  background: black;
+  overflow: hidden;
+  perspective: 450px;
+}
+
+/* Title card shown briefly before crawl */
+.title-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9; /* above stars and overlay */
+  pointer-events: none;
+  transition: opacity 0.8s ease, visibility 0.3s linear;
+  opacity: 1;
+  visibility: visible;
+  text-align: center;
+  font-family: 'Staatliches', 'Pathway Gothic One', sans-serif;
+  color: #feda4a;
+}
+.title-card.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+.title-card-inner {
+  backdrop-filter: none;
+}
+.title-card-main {
+  margin: 0;
+  font-size: clamp(2.4rem, 8vw, 6rem);
+  letter-spacing: 0.6rem;
+  text-transform: uppercase;
+  color: #feda4a;
+  text-shadow: 0 0 10px rgba(254,218,74,0.6);
+}
+.title-card-sub {
+  margin: 6px 0 0 0;
+  font-size: clamp(1rem, 3.5vw, 1.6rem);
+  color: rgba(254,218,74,0.9);
+  letter-spacing: 0.5rem;
+}
+
+/* THIS is the trapezium — it NEVER moves */
+.crawl-frame {
+  position: absolute;
+  
+  bottom: 0;
+  left: 50%;
+  width: 95%;               /* 🔥 WIDER trapezium */
+  max-width: 1400px;
+  height: 100%;
+  transform: translateX(-50%) rotateX(25deg);
+  transform-origin: bottom center;
+  overflow: hidden;
+
+  /* Fade mask (bottom fade in + top fade out) */
+  mask-image: linear-gradient(
+    to top,
+    transparent 0%,
+    black 12%,
+    black 70%,
+    transparent 88%
+  );
+}
+
+
+@keyframes starCrawl {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-260%);
+  }
+}
+
+/* ================= STARFIELD ================= */
+
+
+/* ================= STARFIELD (CREDITS ONLY) ================= */
+
+#credits {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stars base */
+/* ================= STARFIELD (CREDITS ONLY) ================= */
+
+#credits {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Base star layers */
+#credits .stars,
+#credits .stars2,
+#credits .stars3 {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: repeat;
+}
+
+/* Far stars */
+#credits .stars {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, white, transparent),
+    radial-gradient(1px 1px at 80% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 10% 90%, white, transparent);
+  background-size: 300px 300px;
+  opacity: 0.35;
+  animation: starDrift 120s linear infinite;
+}
+
+/* Mid stars */
+#credits .stars2 {
+  background-image:
+    radial-gradient(2px 2px at 40% 60%, white, transparent),
+    radial-gradient(2px 2px at 70% 20%, white, transparent),
+    radial-gradient(2px 2px at 90% 80%, white, transparent);
+  background-size: 220px 220px;
+  opacity: 0.55;
+  animation: starDrift 90s linear infinite;
+}
+
+/* Near stars */
+#credits .stars3 {
+  background-image:
+    radial-gradient(3px 3px at 30% 40%, white, transparent),
+    radial-gradient(3px 3px at 60% 10%, white, transparent),
+    radial-gradient(3px 3px at 75% 75%, white, transparent);
+  background-size: 160px 160px;
+  opacity: 0.85;
+  animation: starDrift 60s linear infinite;
+}
+
+@keyframes starDrift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(1000px); }
+}
+
+/* ================= STARFIELD (CREDITS ONLY) ================= */
+
+#credits {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Base star layers */
+#credits .stars,
+#credits .stars2,
+#credits .stars3 {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 0;
+  background-repeat: repeat;
+}
+
+/* Far stars */
+#credits .stars {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, white, transparent),
+    radial-gradient(1px 1px at 80% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 10% 90%, white, transparent);
+  background-size: 300px 300px;
+  opacity: 0.35;
+  animation: starDrift 120s linear infinite;
+}
+
+/* Mid stars */
+#credits .stars2 {
+  background-image:
+    radial-gradient(2px 2px at 40% 60%, white, transparent),
+    radial-gradient(2px 2px at 70% 20%, white, transparent),
+    radial-gradient(2px 2px at 90% 80%, white, transparent);
+  background-size: 220px 220px;
+  opacity: 0.55;
+  animation: starDrift 90s linear infinite;
+}
+
+/* Near stars */
+#credits .stars3 {
+  background-image:
+    radial-gradient(3px 3px at 30% 40%, white, transparent),
+    radial-gradient(3px 3px at 60% 10%, white, transparent),
+    radial-gradient(3px 3px at 75% 75%, white, transparent);
+  background-size: 160px 160px;
+  opacity: 0.85;
+  animation: starDrift 60s linear infinite;
+}
+
+@keyframes starDrift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(1000px); }
+}
+
+
+
+.starwars::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to bottom,
+    black 0%,
+    rgba(0, 0, 0, 0.6) 30%,
+    rgba(0, 0, 0, 0.2) 60%,
+    transparent 100%
+  );
+
+  z-index: 1; /* lower overlay so stars can sit above it */
+}
+
+
+.crawl {
+  position: absolute;
+  bottom: -120%;
+  width: 100%;
+  color: #feda4a;
+  font-family: "Franklin Gothic Medium", Arial, sans-serif;
+  font-size: clamp(2.4rem, 6vw, 3.8rem); /* WAY BIGGER */
+  line-height: 1.9;
+  text-align: justify;
+
+  /* ensure crawl text sits above the starfield canvas */
+  z-index: 6;
+
+  animation: starCrawl 60s linear infinite;
+
+
+  color: #feda4a;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+  font-size: clamp(2.2rem, 6vw, 3.4rem); /* BIGGER + wider feel */
+  line-height: 1.9;
+  text-align: justify;
+
+  /* Smooth fade when revealing the crawl */
+  transition: opacity 1s ease;
+}
+
+
+.crawl h1 {
+  text-align: center;
+  font-size: clamp(3rem, 10vw, 6rem); /* bigger heading */
+  margin: 40px 0;
+  text-transform: uppercase;
+}
+
+.episode {
+  text-align: center;
+  letter-spacing: 8px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: clamp(2rem, 8vw, 4rem); /* bigger episode title */
+  text-transform: uppercase;
+}
+
+
+@keyframes starCrawl {
+  0% {
+    bottom: -120%;
+    transform: rotateX(25deg) translateZ(0);
+  }
+  100% {
+    bottom: 100%;
+    transform: rotateX(25deg) translateZ(-900px);
+  }
+}
+
+#giftBtn {
+  position: fixed;
+  right: 20px;
+  bottom: 120px;
+  font-size: 42px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  animation: giftPulse 1.5s infinite alternate;
+  z-index: 6;
+}
+
+@keyframes giftPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+/* Cake button hidden by default; will fade in after credits finish */
+#cakeBtn {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease, transform 0.3s ease;
+}
+#cakeBtn.visible-cake {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+.cake-message {
+  color: pink;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  text-align: center;
+  margin-top: 30px;
+}
+
+button {
+  padding: 10px 20px;
+  background: pink;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+#backBtn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(255, 192, 203, 0.9);
+  border: none;
+  font-size: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+/* Fix for Star Wars crawl inside flex container */
+#credits.screen.active {
+  display: block; /* allow absolute positioning to work */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shooting star effect (used during credits) */
+.shooting-star {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 10px rgba(255,255,255,0.6);
+  pointer-events: none;
+  z-index: 7; /* above starfield and overlay, below crawl text if needed */
+  transform: translate3d(0,0,0) rotate(-30deg);
+  animation: shoot 900ms linear forwards;
+}
+
+@keyframes shoot {
+  from {
+    opacity: 1;
+    transform: translate3d(0,0,0) scaleX(1) rotate(-30deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(100vw, -40vh, 0) scaleX(0.6) rotate(-30deg);
+  }
+}
+/* LUFFY DANCE GIF */
+.luffy-dance {
+  margin-top: 25px;
+  width: clamp(140px, 40vw, 260px);
+  height: auto;
+  image-rendering: auto;
+  animation: luffyBounce 2s infinite ease-in-out;
+}
+
+/* subtle fun bounce */
+@keyframes luffyBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+
+/* BABY YODA TOP LEFT */
+.baby-yoda {
+  position: fixed;
+  top: 66px;
+  left: -3px;
+  width: clamp(80px, 15vw, 120px);
+  height: auto;
+  z-index: 20; /* above all content */
+  animation: yodaFloat 3s ease-in-out infinite;
+}
+
+/* subtle floating effect */
+@keyframes yodaFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.gift-letter {
+  position: fixed;
+  inset: 5%; /* 🔥 smaller borders (was likely bigger or auto) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+}
+.gift-letter-video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  .gift-letter {
+    inset: 3%;
+  }
+}
+#manualBlowBtn {
+  margin-top: 12px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #000;
+  font-family: 'Staatliches', cursive;
+  box-shadow: 0 0 12px rgba(255, 200, 50, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+#manualBlowBtn:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 6px rgba(255, 200, 50, 0.8);
+}
+.blow-btn {
+  margin-top: 20px;
+  padding: 12px 28px;
+  font-size: 20px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4d6d, #ff9f1c);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(255, 77, 109, 0.4);
+  transition: 0.2s ease;
+}
+
+.blow-btn:hover {
+  transform: scale(1.08);
+}
+
